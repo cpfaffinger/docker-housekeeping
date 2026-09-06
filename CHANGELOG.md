@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.5 - 2026-09-06
+
+* fix: image/volume usage tracking was never persisted (state updated in a subshell), so cooldowns never expired
+* fix: build with `BUILDX_NO_DEFAULT_ATTESTATIONS=1` - with the containerd image store the default provenance attestation changed the image ID on every build, which made every instance look outdated and restart daily
+
 ## 1.1.4 - 2026-09-06
 
 * script version aligned with the release; installer prints the installed version

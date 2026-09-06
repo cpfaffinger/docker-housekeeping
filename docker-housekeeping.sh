@@ -24,8 +24,12 @@
 set -uo pipefail
 export LC_ALL=C.UTF-8
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+# BuildKit attaches provenance/SBOM attestations by default. With the containerd
+# image store that changes the image ID on every build even when nothing changed,
+# which would look like a new image and restart every instance daily.
+export BUILDX_NO_DEFAULT_ATTESTATIONS=1
 
-VERSION="1.1.4"
+VERSION="1.1.5"
 SCRIPT_NAME="docker-housekeeping"
 
 # -----------------------------------------------------------------------------
@@ -526,8 +530,10 @@ save_state() {   # keep only keys that still exist (KEEP_KEYS)
   mv "$tmp" "$STATE_FILE"
 }
 
-# touch_state KEY IN_USE(0/1) CREATED_EPOCH -> updates timestamps, prints the reference time
-# reference time = last use, otherwise first sighting; never older than the creation time
+# touch_state KEY IN_USE(0/1) CREATED_EPOCH -> updates timestamps, sets TS_REF (reference time)
+# reference time = last use, otherwise first sighting; never older than the creation time.
+# Sets a global instead of printing so it is not run in a subshell (state must persist).
+TS_REF=0
 touch_state() {
   local k="$1" inuse="$2" created="$3" ref
   [ -z "${ST_FIRST[$k]:-}" ] && ST_FIRST[$k]=$NOW
@@ -536,7 +542,7 @@ touch_state() {
   ref=${ST_LAST[$k]:-0}
   [ "$ref" -eq 0 ] && ref=${ST_FIRST[$k]}
   [ "$created" -gt "$ref" ] && ref=$created
-  echo "$ref"
+  TS_REF=$ref
 }
 
 cleanup_containers() {
@@ -566,7 +572,7 @@ cleanup_images() {
     read -r created size <<<"$($DOCKER_BIN image inspect -f '{{.Created}} {{.Size}}' "$id" 2>/dev/null)"
     tags=$($DOCKER_BIN image inspect -f '{{join .RepoTags " "}}' "$id" 2>/dev/null)
     k="img:$id"; inuse=0; [ -n "${used[$id]:-}" ] && inuse=1
-    ref=$(touch_state "$k" "$inuse" "$(to_epoch "$created")")
+    touch_state "$k" "$inuse" "$(to_epoch "$created")"; ref=$TS_REF
     [ "$inuse" = 1 ] && continue
     if [ -n "$CLEANUP_IMAGE_KEEP_REGEX" ] && echo "$tags" | grep -qE "$CLEANUP_IMAGE_KEEP_REGEX"; then
       log_debug "  image ${tags:-$id} protected by KEEP_REGEX"; continue
@@ -597,7 +603,7 @@ cleanup_volumes() {
     anon=false; [[ "$v" =~ ^[0-9a-f]{64}$ ]] && anon=true
     created=$($DOCKER_BIN volume inspect -f '{{.CreatedAt}}' "$v" 2>/dev/null)
     k="vol:$v"; inuse=0; [ -n "${used[$v]:-}" ] && inuse=1
-    ref=$(touch_state "$k" "$inuse" "$(to_epoch "$created")")
+    touch_state "$k" "$inuse" "$(to_epoch "$created")"; ref=$TS_REF
     [ "$inuse" = 1 ] && continue
     if ! $anon && ! is_true "$CLEANUP_VOLUMES_NAMED"; then log_debug "  volume $v is named, CLEANUP_VOLUMES_NAMED=false"; continue; fi
     if [ -n "$CLEANUP_VOLUME_KEEP_REGEX" ] && echo "$v" | grep -qE "$CLEANUP_VOLUME_KEEP_REGEX"; then log_debug "  volume $v protected by KEEP_REGEX"; continue; fi
