@@ -7,7 +7,7 @@
 # --- General -----------------------------------------------------------------
 LOG_FILE="/var/log/docker-housekeeping.log"
 STATE_DIR="/var/lib/docker-housekeeping"
-HEALTH_TIMEOUT=120              # seconds a restarted project may take to become running/healthy
+HEALTH_TIMEOUT=300              # seconds a restarted project may take to become running/healthy
 
 # --- Phase 1: compose projects in /etc/docker/compose ------------------------
 COMPOSE_ENABLED="auto"          # true|false|auto (auto = run when COMPOSE_DIR exists)
