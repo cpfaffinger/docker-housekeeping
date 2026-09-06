@@ -44,43 +44,65 @@ Comparing the container's `.Image` with `docker image inspect <ref>` is version 
 
 The installer downloads every file with `curl` straight into its destination
 (`/usr/local/sbin`, `/etc`, `/etc/cron.d`) - nothing is staged in a temp
-directory.
+directory. Run it as root:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh | bash
 ```
 
-Options are passed after `bash -s --`:
+When a terminal is available the installer asks a few questions (answers are
+read from `/dev/tty`, so this works through the `curl | bash` pipe):
+
+1. scheduler: `cron` (default, `/etc/cron.d/docker-housekeeping`), `systemd` timer or `none`
+2. daily run time (default `04:15`)
+3. mail recipients
+4. mail transport:
+   * **sendmail** - hand the report to the local MTA (`/usr/sbin/sendmail`, e.g. a Postfix relay)
+   * **smtp** - deliver directly to an external SMTP server: host, security
+     (`none` = plain SMTP, `starttls`, `ssl`), port (defaults 25 / 587 / 465),
+     optional user and password
+5. whether legacy automation (`docker-cleanup.timer`, old crontab lines) should be disabled
+6. a summary to confirm, and an optional test mail at the end
+
+Every answer can be supplied as an option; `--non-interactive` skips all
+questions and uses options or defaults:
 
 ```bash
-# set the recipient right away and disable the legacy cron lines / docker-cleanup.timer
-curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh \
-  | bash -s -- --mail-to ops@example.com --disable-legacy
+# unattended, local sendmail, disable the old cron lines / docker-cleanup.timer
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh   | bash -s -- --non-interactive --mail-to ops@example.com --disable-legacy
 
-# schedule with a systemd timer instead of cron, run at 03:30
-curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh \
-  | bash -s -- --scheduler systemd --time 03:30
+# external SMTP server with STARTTLS and login
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh   | bash -s -- --non-interactive --mail-to ops@example.com        --mail-transport smtp --smtp-host mail.example.com --smtp-port 587        --smtp-tls starttls --smtp-user report --smtp-password 'secret'
+
+# plain SMTP relay without authentication, systemd timer at 03:30
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh   | bash -s -- --non-interactive --mail-to ops@example.com        --mail-transport smtp --smtp-host relay.internal --smtp-port 25 --smtp-tls none        --scheduler systemd --time 03:30
 
 # install a specific tag / branch
-curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh \
-  | bash -s -- --ref v1.0.0
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh   | bash -s -- --ref v1.1.0
 ```
 
 | Option | Meaning |
 |--------|---------|
-| `--scheduler cron\|systemd\|none` | daily trigger, default `cron` (`/etc/cron.d/docker-housekeeping`) |
+| `--non-interactive` | never ask; use options and defaults |
+| `--scheduler cron\|systemd\|none` | daily trigger, default `cron` |
 | `--time HH:MM` | daily run time, default `04:15` |
-| `--mail-to ADDR` | `MAIL_TO` for a newly created config |
+| `--mail-to "A B"` | recipients, space separated |
+| `--mail-transport sendmail\|smtp` | local MTA or external SMTP server |
+| `--smtp-host`, `--smtp-port`, `--smtp-tls none\|starttls\|ssl`, `--smtp-user`, `--smtp-password` | external SMTP settings (plain SMTP is allowed) |
 | `--ref REF` | git ref to install, default `main` |
 | `--force-config` | overwrite an existing `/etc/docker-housekeeping.conf` |
-| `--disable-legacy` | disable `docker-cleanup.timer`, comment out old crontab lines (backup is written to `/root/crontab.backup-*`) |
+| `--disable-legacy` | disable `docker-cleanup.timer`, comment out old crontab lines (backup in `/root/crontab.backup-*`) |
+| `--no-test-mail` | do not offer a test mail |
 | `--uninstall` | remove script, scheduler and logrotate snippet; config, log and state stay |
+
+An existing config is never overwritten (unless `--force-config`); the
+installer only offers to update the mail settings inside it.
 
 Installed files:
 
 ```
 /usr/local/sbin/docker-housekeeping     the script
-/etc/docker-housekeeping.conf           configuration (never overwritten unless --force-config)
+/etc/docker-housekeeping.conf           configuration
 /etc/cron.d/docker-housekeeping         daily trigger (or systemd .service/.timer)
 /etc/logrotate.d/docker-housekeeping    log rotation
 /var/log/docker-housekeeping.log        log
@@ -91,8 +113,7 @@ Re-running the installer updates the script and keeps the config. Updating
 without the installer is a one-liner as well:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/docker-housekeeping.sh \
-  -o /usr/local/sbin/docker-housekeeping && chmod 755 /usr/local/sbin/docker-housekeeping
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/docker-housekeeping.sh   -o /usr/local/sbin/docker-housekeeping && chmod 755 /usr/local/sbin/docker-housekeeping
 ```
 
 ## First run

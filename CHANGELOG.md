@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 - 2026-09-06
+
+* installer is interactive when a terminal is available (works with `curl ... | bash`, questions are read from /dev/tty): scheduler, run time, recipients, mail transport
+* mail transport choice: local sendmail or external SMTP server with host, port, optional user/password and security none (plain) / starttls / ssl
+* every answer available as an option; `--non-interactive` for unattended installs
+* optional test mail at the end of the installation
+* existing configs are kept; the installer offers to update only the mail settings
+
 ## 1.0.0 - 2026-09-06
 
 Initial release.

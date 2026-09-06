@@ -25,7 +25,7 @@ set -uo pipefail
 export LC_ALL=C.UTF-8
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-VERSION="1.0.0"
+VERSION="1.1.0"
 SCRIPT_NAME="docker-housekeeping"
 
 # -----------------------------------------------------------------------------
