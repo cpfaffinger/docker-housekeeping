@@ -326,6 +326,7 @@ if [ "$TEST_MAIL" != false ] && $WRITE_MAIL; then
 fi
 
 say
+say "Installed: $("$BIN" --version 2>/dev/null || echo "$BIN")"
 say "Next steps:"
 say "  $BIN --dry-run --no-mail     # see what would happen"
 say "  $BIN --test-mail             # verify mail delivery"

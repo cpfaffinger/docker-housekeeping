@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.4 - 2026-09-06
+
+* script version aligned with the release; installer prints the installed version
+
 ## 1.1.3 - 2026-09-06
 
 * installer: fix reading MAIL_FROM from an existing config (1.1.2 shipped this fix incomplete)
