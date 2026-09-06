@@ -4,6 +4,10 @@
 
 * installer: fix reading MAIL_FROM from an existing config
 
+## 1.1.2 - 2026-09-06
+
+* installer: fix reading MAIL_FROM from an existing config
+
 ## 1.1.1 - 2026-09-06
 
 * installer: `--mail-from` option and sender prompt
