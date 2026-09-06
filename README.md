@@ -142,6 +142,8 @@ important ones:
 | `COMPOSE_ENABLED` / `DOCKERWEB_ENABLED` | `auto` | run the phase when the directory exists |
 | `COMPOSE_EXCLUDE` / `DOCKERWEB_EXCLUDE` | | projects / instances to leave alone (globs) |
 | `COMPOSE_RESTART` / `DOCKERWEB_RESTART` | `true` | `false` = only report that a restart is due |
+| `COMPOSE_BUILD_EXCLUDE` | | projects whose `build:` sections are ignored; their images are pulled instead |
+| `HEALTH_TIMEOUT` | `300` | seconds to wait after a restart; containers whose healthcheck is still `starting` afterwards produce a warning, anything else an error |
 | `DOCKERWEB_BUILD_PULL` | `true` | refresh the base image (`php:8.5-apache`) when building templates |
 | `DOCKERWEB_RESTART_MAX` | `0` | limit restarts per run (spread big updates over several days) |
 | `CLEANUP_CONTAINER_MIN_AGE_DAYS` | `7` | stopped containers are removed after this |

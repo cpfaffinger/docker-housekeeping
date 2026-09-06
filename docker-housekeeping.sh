@@ -29,7 +29,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 # which would look like a new image and restart every instance daily.
 export BUILDX_NO_DEFAULT_ATTESTATIONS=1
 
-VERSION="1.1.5"
+VERSION="1.1.6"
 SCRIPT_NAME="docker-housekeeping"
 
 # -----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ CONFIG_FILE="/etc/docker-housekeeping.conf"
 LOG_FILE="/var/log/docker-housekeeping.log"
 STATE_DIR="/var/lib/docker-housekeeping"
 LOCK_FILE="/run/lock/docker-housekeeping.lock"
-HEALTH_TIMEOUT=120            # seconds to wait for containers to be running/healthy after a restart
+HEALTH_TIMEOUT=300            # seconds to wait for containers to be running/healthy after a restart
 DOCKER_BIN="docker"
 
 # Phase 1: compose projects
@@ -50,6 +50,7 @@ COMPOSE_DIR="/etc/docker/compose"
 COMPOSE_EXCLUDE=""            # space separated project names/globs, e.g. "vision-api.old *.bak"
 COMPOSE_PULL="true"           # docker compose pull
 COMPOSE_BUILD="true"          # also rebuild projects that contain build: sections
+COMPOSE_BUILD_EXCLUDE=""      # projects/globs whose build: sections are ignored (images are pulled instead)
 COMPOSE_BUILD_PULL="true"     # refresh base images while building (--pull)
 COMPOSE_RESTART="true"        # restart on new image (false = report only)
 COMPOSE_RESTART_METHOD="auto" # auto|systemd|compose
@@ -367,6 +368,10 @@ restart_project() {
   if out=$(wait_healthy "$d" "$HEALTH_TIMEOUT"); then
     log_info "  $name is up (healthy)"
     return 0
+  elif [ -z "$(echo "$out" | tr ' ' '\n' | grep -v '^$' | grep -v ':running/starting$')" ]; then
+    # everything is running, only healthchecks with a long interval are still pending
+    log_warn "  $name restarted, healthcheck still 'starting' after ${HEALTH_TIMEOUT}s:$out"
+    return 0
   else
     log_error "  $name not healthy ${HEALTH_TIMEOUT}s after restart:$out"
     return 1
@@ -386,28 +391,39 @@ phase_compose() {
     if ! cf=$(find_compose_file "$dir"); then log_warn "[$name] no compose file found, skipped"; continue; fi
     log_info "[$name] $dir/$cf"
 
+    # projects in COMPOSE_BUILD_EXCLUDE: ignore their build: sections and pull every
+    # image instead (useful when a compose file still carries a build: for an image
+    # that is really published in a registry)
+    local do_build=false ignore_buildable="--ignore-buildable"
+    if is_true "$COMPOSE_BUILD" && compose_has_build "$dir"; then
+      if glob_match_any "$name" "$COMPOSE_BUILD_EXCLUDE"; then
+        log_info "[$name] build: ignored (COMPOSE_BUILD_EXCLUDE), pulling images instead"
+        ignore_buildable=""
+      else
+        do_build=true
+      fi
+    fi
+
     if is_true "$COMPOSE_PULL"; then
       if $DRY_RUN; then
-        log_info "[$name] [dry-run] docker compose pull"
+        log_info "[$name] [dry-run] docker compose pull $ignore_buildable"
       else
-        if ! out=$(cd "$dir" && $DOCKER_BIN compose pull --quiet --ignore-buildable 2>&1); then
+        if ! out=$(cd "$dir" && $DOCKER_BIN compose pull --quiet $ignore_buildable 2>&1); then
           # older compose versions do not know --ignore-buildable -> retry without it
           if ! out=$(cd "$dir" && $DOCKER_BIN compose pull --quiet 2>&1); then
             log_error "[$name] docker compose pull failed: $(echo "$out" | grep -v 'obsolete' | tail -3 | tr '\n' ' ')"
-            continue
           fi
         fi
         log_debug "[$name] pull: $out"
       fi
     fi
 
-    if is_true "$COMPOSE_BUILD" && compose_has_build "$dir"; then
+    if $do_build; then
       pullflag=""; is_true "$COMPOSE_BUILD_PULL" && pullflag="--pull"
       log_info "[$name] project contains build:, building images $pullflag"
       if ! $DRY_RUN; then
         if ! out=$(cd "$dir" && $DOCKER_BIN compose build --quiet $pullflag 2>&1); then
-          log_error "[$name] docker compose build failed: $(echo "$out" | tail -5 | tr '\n' ' ')"
-          continue
+          log_error "[$name] docker compose build failed: $(echo "$out" | grep -v 'obsolete' | tail -5 | tr '\n' ' ')"
         fi
       fi
     fi

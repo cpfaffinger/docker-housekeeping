@@ -15,6 +15,7 @@ COMPOSE_DIR="/etc/docker/compose"
 COMPOSE_EXCLUDE=""              # skip projects, e.g. "vision-api.old *.bak"
 COMPOSE_PULL="true"             # docker compose pull
 COMPOSE_BUILD="true"            # rebuild projects that contain build: sections
+COMPOSE_BUILD_EXCLUDE=""        # ignore build: in these projects and pull their images instead, e.g. "qr-code-generator"
 COMPOSE_BUILD_PULL="true"       # refresh base images while building (--pull)
 COMPOSE_RESTART="true"          # restart on new image (false = only report by mail)
 COMPOSE_RESTART_METHOD="auto"   # auto = systemctl restart docker-compose@<name> if that unit is active, else docker compose up -d

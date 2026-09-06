@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.6 - 2026-09-06
+
+* `COMPOSE_BUILD_EXCLUDE`: ignore `build:` sections of selected projects and pull their images instead (compose files that still carry a `build:` for a registry image)
+* a failed build or pull no longer skips the outdated check of that project
+* `HEALTH_TIMEOUT` default raised to 300s; containers whose healthcheck is still `starting` after the timeout produce a warning instead of an error (healthchecks with long intervals, e.g. guacd 5m)
+
 ## 1.1.5 - 2026-09-06
 
 * fix: image/volume usage tracking was never persisted (state updated in a subshell), so cooldowns never expired
