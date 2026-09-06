@@ -1,12 +1,8 @@
 # Changelog
 
-## 1.1.2 - 2026-09-06
+## 1.1.3 - 2026-09-06
 
-* installer: fix reading MAIL_FROM from an existing config
-
-## 1.1.2 - 2026-09-06
-
-* installer: fix reading MAIL_FROM from an existing config
+* installer: fix reading MAIL_FROM from an existing config (1.1.2 shipped this fix incomplete)
 
 ## 1.1.1 - 2026-09-06
 

@@ -182,7 +182,7 @@ fi
 if $WRITE_MAIL; then
   CUR_TO=""; $CONFIG_EXISTS && CUR_TO=$(sed -n 's/^MAIL_TO="\(.*\)"/\1/p' "$CONF" | head -1)
   [ -z "$MAIL_TO" ] && ask MAIL_TO "Mail recipient(s), space separated" "${CUR_TO:-root@$(hostname -f 2>/dev/null || hostname)}"
-  CUR_FROM=""; $CONFIG_EXISTS && CUR_FROM=$(sed -n 's/^MAIL_FROM="\(.*\)"//p' "$CONF" | head -1)
+  CUR_FROM=""; $CONFIG_EXISTS && CUR_FROM=$(sed -n 's/^MAIL_FROM="\(.*\)"/\1/p' "$CONF" | head -1)
   [ -z "$MAIL_FROM" ] && ask MAIL_FROM "Sender address (empty = docker-housekeeping@$(hostname -f 2>/dev/null || hostname))" "$CUR_FROM"
   if [ -z "$MAIL_TRANSPORT" ]; then
     if [ -n "$SMTP_HOST" ]; then MAIL_TRANSPORT=smtp
