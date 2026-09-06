@@ -19,6 +19,7 @@
 #   --scheduler cron|systemd|none   daily trigger (default: cron)
 #   --time HH:MM                    daily run time (default: 04:15)
 #   --mail-to "A B"                 recipients (space separated)
+#   --mail-from ADDR                sender address (default: docker-housekeeping@<fqdn>)
 #   --mail-transport sendmail|smtp  local sendmail (Postfix/msmtp) or external SMTP server
 #   --smtp-host HOST                external SMTP server
 #   --smtp-port PORT                default 25 (none), 587 (starttls), 465 (ssl)
@@ -41,6 +42,7 @@ REF="main"
 SCHEDULER=""
 RUN_TIME=""
 MAIL_TO=""
+MAIL_FROM=""
 MAIL_TRANSPORT=""
 SMTP_HOST=""
 SMTP_PORT=""
@@ -65,6 +67,7 @@ while [ $# -gt 0 ]; do
     --scheduler) SCHEDULER="$2"; shift;;         --scheduler=*) SCHEDULER="${1#*=}";;
     --time) RUN_TIME="$2"; shift;;               --time=*) RUN_TIME="${1#*=}";;
     --mail-to) MAIL_TO="$2"; shift;;             --mail-to=*) MAIL_TO="${1#*=}";;
+    --mail-from) MAIL_FROM="$2"; shift;;         --mail-from=*) MAIL_FROM="${1#*=}";;
     --mail-transport) MAIL_TRANSPORT="$2"; shift;; --mail-transport=*) MAIL_TRANSPORT="${1#*=}";;
     --smtp-host) SMTP_HOST="$2"; shift;;         --smtp-host=*) SMTP_HOST="${1#*=}";;
     --smtp-port) SMTP_PORT="$2"; shift;;         --smtp-port=*) SMTP_PORT="${1#*=}";;
@@ -179,6 +182,8 @@ fi
 if $WRITE_MAIL; then
   CUR_TO=""; $CONFIG_EXISTS && CUR_TO=$(sed -n 's/^MAIL_TO="\(.*\)"/\1/p' "$CONF" | head -1)
   [ -z "$MAIL_TO" ] && ask MAIL_TO "Mail recipient(s), space separated" "${CUR_TO:-root@$(hostname -f 2>/dev/null || hostname)}"
+  CUR_FROM=""; $CONFIG_EXISTS && CUR_FROM=$(sed -n 's/^MAIL_FROM="\(.*\)"//p' "$CONF" | head -1)
+  [ -z "$MAIL_FROM" ] && ask MAIL_FROM "Sender address (empty = docker-housekeeping@$(hostname -f 2>/dev/null || hostname))" "$CUR_FROM"
   if [ -z "$MAIL_TRANSPORT" ]; then
     if [ -n "$SMTP_HOST" ]; then MAIL_TRANSPORT=smtp
     else
@@ -212,6 +217,7 @@ say "Summary:"
 say "  scheduler      : $SCHEDULER${RUN_TIME:+ at $RUN_TIME}"
 if $WRITE_MAIL; then
   say "  mail to        : $MAIL_TO"
+  say "  mail from      : ${MAIL_FROM:-docker-housekeeping@$(hostname -f 2>/dev/null || hostname)}"
   say "  mail transport : $MAIL_TRANSPORT${SMTP_HOST:+ -> $SMTP_HOST:$SMTP_PORT ($SMTP_TLS${SMTP_USER:+, user $SMTP_USER})}"
 else
   say "  mail           : unchanged ($CONF)"
@@ -234,6 +240,7 @@ else
 fi
 if $WRITE_MAIL; then
   set_conf MAIL_TO "$MAIL_TO"
+  set_conf MAIL_FROM "$MAIL_FROM"
   set_conf MAIL_TRANSPORT "$MAIL_TRANSPORT"
   if [ "$MAIL_TRANSPORT" = smtp ]; then
     set_conf MAIL_SMTP_HOST "$SMTP_HOST"

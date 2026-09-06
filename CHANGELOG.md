@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 - 2026-09-06
+
+* installer: `--mail-from` option and sender prompt
+
 ## 1.1.0 - 2026-09-06
 
 * installer is interactive when a terminal is available (works with `curl ... | bash`, questions are read from /dev/tty): scheduler, run time, recipients, mail transport

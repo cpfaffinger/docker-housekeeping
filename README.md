@@ -55,7 +55,7 @@ read from `/dev/tty`, so this works through the `curl | bash` pipe):
 
 1. scheduler: `cron` (default, `/etc/cron.d/docker-housekeeping`), `systemd` timer or `none`
 2. daily run time (default `04:15`)
-3. mail recipients
+3. mail recipients and sender address
 4. mail transport:
    * **sendmail** - hand the report to the local MTA (`/usr/sbin/sendmail`, e.g. a Postfix relay)
    * **smtp** - deliver directly to an external SMTP server: host, security
@@ -87,6 +87,7 @@ curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/mai
 | `--scheduler cron\|systemd\|none` | daily trigger, default `cron` |
 | `--time HH:MM` | daily run time, default `04:15` |
 | `--mail-to "A B"` | recipients, space separated |
+| `--mail-from ADDR` | sender address (default `docker-housekeeping@<fqdn>`) |
 | `--mail-transport sendmail\|smtp` | local MTA or external SMTP server |
 | `--smtp-host`, `--smtp-port`, `--smtp-tls none\|starttls\|ssl`, `--smtp-user`, `--smtp-password` | external SMTP settings (plain SMTP is allowed) |
 | `--ref REF` | git ref to install, default `main` |
