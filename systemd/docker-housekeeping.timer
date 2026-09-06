@@ -1,0 +1,12 @@
+[Unit]
+Description=Run docker housekeeping daily
+
+[Timer]
+# daily at 04:15 plus up to 30 minutes random delay; runs are caught up after downtime
+OnCalendar=*-*-* 04:15:00
+RandomizedDelaySec=30min
+Persistent=true
+Unit=docker-housekeeping.service
+
+[Install]
+WantedBy=timers.target

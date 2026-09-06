@@ -1,0 +1,71 @@
+# =============================================================================
+# /etc/docker-housekeeping.conf
+# Configuration for docker-housekeeping. The file is sourced by bash: KEY="value"
+# Every key is optional - unset keys fall back to the defaults built into the script.
+# =============================================================================
+
+# --- General -----------------------------------------------------------------
+LOG_FILE="/var/log/docker-housekeeping.log"
+STATE_DIR="/var/lib/docker-housekeeping"
+HEALTH_TIMEOUT=120              # seconds a restarted project may take to become running/healthy
+
+# --- Phase 1: compose projects in /etc/docker/compose ------------------------
+COMPOSE_ENABLED="auto"          # true|false|auto (auto = run when COMPOSE_DIR exists)
+COMPOSE_DIR="/etc/docker/compose"
+COMPOSE_EXCLUDE=""              # skip projects, e.g. "vision-api.old *.bak"
+COMPOSE_PULL="true"             # docker compose pull
+COMPOSE_BUILD="true"            # rebuild projects that contain build: sections
+COMPOSE_BUILD_PULL="true"       # refresh base images while building (--pull)
+COMPOSE_RESTART="true"          # restart on new image (false = only report by mail)
+COMPOSE_RESTART_METHOD="auto"   # auto = systemctl restart docker-compose@<name> if that unit is active, else docker compose up -d
+
+# --- Phase 2: dockerweb templates + instances in /home/dockerweb -------------
+DOCKERWEB_ENABLED="auto"        # true|false|auto (auto = run when DOCKERWEB_DIR exists)
+DOCKERWEB_DIR="/home/dockerweb"
+DOCKERWEB_TEMPLATE_GLOB="_template*"
+DOCKERWEB_EXCLUDE=""            # instances that must never be restarted automatically, e.g. "www_example_com"
+DOCKERWEB_BUILD="true"          # build the templates (dockerweb84 / dockerweb85 images)
+DOCKERWEB_BUILD_PULL="true"     # refresh the php:8.x-apache base image
+DOCKERWEB_RESTART="true"        # restart instances that still run an outdated image (false = report only)
+DOCKERWEB_RESTART_METHOD="auto" # auto|systemd|compose
+DOCKERWEB_RESTART_DELAY=5       # seconds between restarts
+DOCKERWEB_RESTART_MAX=0         # max. instance restarts per run (0 = all)
+
+# --- Phase 3: cleanup ---------------------------------------------------------
+CLEANUP_ENABLED="true"
+CLEANUP_CONTAINERS="true"
+CLEANUP_CONTAINER_MIN_AGE_DAYS=7      # remove stopped containers once they have been stopped for X days
+CLEANUP_IMAGES="true"
+CLEANUP_IMAGE_COOLDOWN_DAYS=3         # remove an image X days after it was last used by any container
+CLEANUP_IMAGE_KEEP_REGEX=""           # e.g. "^(mariadb|postgres):" - never remove
+CLEANUP_VOLUMES="true"                # volume cleanup (false = completely off)
+CLEANUP_VOLUMES_NAMED="true"          # also named volumes (false = only anonymous 64-hex volumes)
+CLEANUP_VOLUME_COOLDOWN_DAYS=14       # remove a volume X days after it was last mounted by any container
+CLEANUP_VOLUME_KEEP_REGEX=""          # e.g. "_data$|^backup"
+CLEANUP_NETWORKS="true"
+CLEANUP_BUILD_CACHE="true"
+CLEANUP_BUILD_CACHE_MAX_AGE_DAYS=7    # build cache entries unused for longer than this
+CLEANUP_BUILD_CACHE_KEEP_STORAGE=""   # e.g. "10GB" - additional size cap
+CLEANUP_EMERGENCY_DISK_PERCENT=90     # when the docker root is fuller than this, ignore all cooldowns (0 = off)
+
+# --- Phase 4: mail ------------------------------------------------------------
+MAIL_ENABLED="true"
+MAIL_ON_SUCCESS="true"
+MAIL_ON_ERROR="true"
+MAIL_ONLY_ON_CHANGE="false"     # true = success mail only when something changed or warnings exist
+MAIL_TO="admin@example.com"     # separate multiple recipients with spaces
+MAIL_FROM=""                    # empty = docker-housekeeping@<fqdn>
+MAIL_SUBJECT_PREFIX="[docker-housekeeping]"
+MAIL_INCLUDE_LOG="true"
+MAIL_LOG_MAX_LINES=400
+
+# Transport: "auto" = SMTP when MAIL_SMTP_HOST is set, otherwise the local sendmail (e.g. a Postfix relay)
+MAIL_TRANSPORT="auto"
+# Direct SMTP delivery (requires curl):
+MAIL_SMTP_HOST=""
+MAIL_SMTP_PORT=25
+MAIL_SMTP_TLS="none"            # none|starttls|ssl
+MAIL_SMTP_USER=""
+MAIL_SMTP_PASSWORD=""
+MAIL_SMTP_INSECURE="false"
+MAIL_SENDMAIL_BIN="/usr/sbin/sendmail"

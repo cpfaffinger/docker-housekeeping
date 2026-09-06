@@ -1,0 +1,6 @@
+# /etc/cron.d/docker-housekeeping - daily Docker maintenance
+# The script sends its own report mail, so cron output is discarded.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=""
+15 4 * * * root /usr/local/sbin/docker-housekeeping >/dev/null 2>&1
