@@ -69,16 +69,24 @@ questions and uses options or defaults:
 
 ```bash
 # unattended, local sendmail, disable the old cron lines / docker-cleanup.timer
-curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh   | bash -s -- --non-interactive --mail-to ops@example.com --disable-legacy
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh \
+  | bash -s -- --non-interactive --mail-to ops@example.com --disable-legacy
 
 # external SMTP server with STARTTLS and login
-curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh   | bash -s -- --non-interactive --mail-to ops@example.com        --mail-transport smtp --smtp-host mail.example.com --smtp-port 587        --smtp-tls starttls --smtp-user report --smtp-password 'secret'
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh \
+  | bash -s -- --non-interactive --mail-to ops@example.com \
+       --mail-transport smtp --smtp-host mail.example.com --smtp-port 587 \
+       --smtp-tls starttls --smtp-user report --smtp-password 'secret'
 
 # plain SMTP relay without authentication, systemd timer at 03:30
-curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh   | bash -s -- --non-interactive --mail-to ops@example.com        --mail-transport smtp --smtp-host relay.internal --smtp-port 25 --smtp-tls none        --scheduler systemd --time 03:30
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh \
+  | bash -s -- --non-interactive --mail-to ops@example.com \
+       --mail-transport smtp --smtp-host relay.internal --smtp-port 25 --smtp-tls none \
+       --scheduler systemd --time 03:30
 
 # install a specific tag / branch
-curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh   | bash -s -- --ref v1.1.0
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/install.sh \
+  | bash -s -- --ref v1.2.0
 ```
 
 | Option | Meaning |
@@ -114,7 +122,8 @@ Re-running the installer updates the script and keeps the config. Updating
 without the installer is a one-liner as well:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/docker-housekeeping.sh   -o /usr/local/sbin/docker-housekeeping && chmod 755 /usr/local/sbin/docker-housekeeping
+curl -fsSL https://raw.githubusercontent.com/cpfaffinger/docker-housekeeping/main/docker-housekeeping.sh \
+  -o /usr/local/sbin/docker-housekeeping && chmod 755 /usr/local/sbin/docker-housekeeping
 ```
 
 ## First run
