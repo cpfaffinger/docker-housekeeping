@@ -37,7 +37,7 @@ CLEANUP_ENABLED="true"
 CLEANUP_CONTAINERS="true"
 CLEANUP_CONTAINER_MIN_AGE_DAYS=7      # remove stopped containers once they have been stopped for X days
 CLEANUP_IMAGES="true"
-CLEANUP_IMAGE_COOLDOWN_DAYS=3         # remove an image X days after it was last used by any container
+CLEANUP_IMAGE_COOLDOWN_DAYS=1         # remove an image X days after it was last used by any container
 CLEANUP_IMAGE_KEEP_REGEX=""           # e.g. "^(mariadb|postgres):" - never remove
 CLEANUP_VOLUMES="true"                # volume cleanup (false = completely off)
 CLEANUP_VOLUMES_NAMED="true"          # also named volumes (false = only anonymous 64-hex volumes)

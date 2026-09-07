@@ -147,7 +147,7 @@ important ones:
 | `DOCKERWEB_BUILD_PULL` | `true` | refresh the base image (`php:8.5-apache`) when building templates |
 | `DOCKERWEB_RESTART_MAX` | `0` | limit restarts per run (spread big updates over several days) |
 | `CLEANUP_CONTAINER_MIN_AGE_DAYS` | `7` | stopped containers are removed after this |
-| `CLEANUP_IMAGE_COOLDOWN_DAYS` | `3` | days since an image was last used by any container |
+| `CLEANUP_IMAGE_COOLDOWN_DAYS` | `1` | days since an image was last used by any container |
 | `CLEANUP_VOLUMES` | `true` | set `false` to never touch volumes |
 | `CLEANUP_VOLUMES_NAMED` | `true` | `false` = only anonymous volumes |
 | `CLEANUP_VOLUME_COOLDOWN_DAYS` | `14` | days since a volume was last mounted |

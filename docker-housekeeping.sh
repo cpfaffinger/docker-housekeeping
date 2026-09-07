@@ -29,7 +29,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 # which would look like a new image and restart every instance daily.
 export BUILDX_NO_DEFAULT_ATTESTATIONS=1
 
-VERSION="1.1.6"
+VERSION="1.2.0"
 SCRIPT_NAME="docker-housekeeping"
 
 # -----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ CLEANUP_ENABLED="true"
 CLEANUP_CONTAINERS="true"
 CLEANUP_CONTAINER_MIN_AGE_DAYS=7      # remove stopped containers only after X days
 CLEANUP_IMAGES="true"
-CLEANUP_IMAGE_COOLDOWN_DAYS=3         # remove an image only X days after it was last used
+CLEANUP_IMAGE_COOLDOWN_DAYS=1         # remove an image only X days after it was last used
 CLEANUP_IMAGE_KEEP_REGEX=""           # regex on repo:tag - matching images are never removed
 CLEANUP_VOLUMES="true"                # volume cleanup (can be switched off)
 CLEANUP_VOLUMES_NAMED="true"          # also named volumes (false = anonymous volumes only)

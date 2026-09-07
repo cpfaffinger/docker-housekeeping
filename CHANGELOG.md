@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 - 2026-09-07
+
+* default image cooldown lowered from 3 days to 1 day: an image is removed in the first run after the day it was last used by a container
+
 ## 1.1.6 - 2026-09-06
 
 * `COMPOSE_BUILD_EXCLUDE`: ignore `build:` sections of selected projects and pull their images instead (compose files that still carry a `build:` for a registry image)
